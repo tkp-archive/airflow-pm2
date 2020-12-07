@@ -9,6 +9,8 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.operator_helpers import context_to_airflow_vars
 
+from .pm2 import makedirs, tempdir, pid, start, restart, stop, reload
+
 
 class PM2Operator(BaseOperator):
     template_fields = ("ecosystem",)
@@ -25,82 +27,49 @@ class PM2Operator(BaseOperator):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
+
+        # the pm2 ecosystem json
         self.ecosystem = ecosystem
 
         if filename:
+            # if file already exists
+
+            # keep path to it
             self.filename = filename
+
+            # set dirname, can ignore
+            self.dirname = os.path.dirname(filename)
+
         else:
-            self.file = tempfile.NamedTemporaryFile()
-            self.filename = self.file.name
-            self.file.write(ecosystem)
+            # if file does not exist, make a temporary one
+            self.filename = os.path.join(tempdir(), '{}.json'.format(self.task_id))
 
-        self.start_command = ["pm2", "start", self.filename]
-        self.restart_command = ["pm2", "restart", self.filename]
-        self.stop_command = ["pm2", "stop", self.filename]
+            # set dirname, can ignore
+            self.dirname = os.path.dirname(filename)
 
-        if kwargs.get("xcom_push") is not None:
-            raise AirflowException(
-                "'xcom_push' was deprecated, use 'BaseOperator.do_xcom_push' instead"
-            )
+        if not os.path.exists(self.filename):
+            # make directory
+            makedirs(self.dirname)
 
-    def _execute(self, context, command):
-        """
-        Execute the ecosystem file command in a temporary directory
-        which will be cleaned afterwards
-        """
-        self.log.info("Tmp dir root location: \n %s", gettempdir())
-
-        # Prepare env for child process.
-        env = os.environ.copy()
-
-        if context:
-            airflow_context_vars = context_to_airflow_vars(
-                context, in_env_var_format=True
-            )
-
-        self.log.debug(
-            "Exporting the following env vars:\n%s",
-            "\n".join([f"{k}={v}" for k, v in airflow_context_vars.items()]),
-        )
-        env.update(airflow_context_vars)
-
-        def pre_exec():
-            # Restore default signal disposition and invoke setsid
-            for sig in ("SIGPIPE", "SIGXFZ", "SIGXFSZ"):
-                if hasattr(signal, sig):
-                    signal.signal(getattr(signal, sig), signal.SIG_DFL)
-            os.setsid()
-
-        self.log.info("Running command: %s", " ".join(command))
-
-        sub_process = Popen(  # pylint: disable=subprocess-popen-preexec-fn
-            command,
-            stdout=PIPE,
-            stderr=STDOUT,
-            cwd=gettempdir(),
-            env=env,
-            preexec_fn=pre_exec,
-        )
-
-        self.log.info("Output:")
-        line = ""
-        for raw_line in iter(sub_process.stdout.readline, b""):
-            line = raw_line.decode("utf8").rstrip()
-            self.log.info("%s", line)
-
-        sub_process.wait()
-
-        self.log.info("Command exited with return code %s", sub_process.returncode)
-
-        if sub_process.returncode != 0:
-            raise AirflowException(
-                "Bash command failed. The command returned a non-zero exit code."
-            )
-
-        return line
+            # open file
+            with open(self.filename, 'w') as fp:
+                # write the ecosystem file
+                fp.write(self.ecosystem)
 
     def execute(self, context):
-        self._execute(context, self.start_command)
+        # if running, stop and restart
+        if pid(self.filename):
+            # stop existing job
+            stop(self.filename)
+
+        # reload ecosystem
+        reload(self.filename)
+
+        # start ecosystem
+        start(self.filename)
 
     def on_kill(self):
-        self._execute(None, self.stop_command)
+        # if running, stop and restart
+        if pid(self.filename):
+            # stop existing job
+            stop(self.filename)
