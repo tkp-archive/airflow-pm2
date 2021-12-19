@@ -1,15 +1,13 @@
 import os
-import signal
-import tempfile
-from subprocess import PIPE, STDOUT, Popen
-from tempfile import gettempdir
 
-from airflow.exceptions import AirflowException
+# from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from airflow.utils.operator_helpers import context_to_airflow_vars
 
-from .pm2 import makedirs, tempdir, pid, start, restart, stop, reload
+# from airflow.utils.operator_helpers import context_to_airflow_vars
+
+# from .pm2 import makedirs, tempdir, pid, start, restart, stop, reload
+from .pm2 import makedirs, tempdir, pid, start, stop, reload
 
 
 class PM2Operator(BaseOperator):
@@ -42,7 +40,7 @@ class PM2Operator(BaseOperator):
 
         else:
             # if file does not exist, make a temporary one
-            self.filename = os.path.join(tempdir(), '{}.json'.format(self.task_id))
+            self.filename = os.path.join(tempdir(), "{}.json".format(self.task_id))
 
             # set dirname, can ignore
             self.dirname = os.path.dirname(filename)
@@ -52,7 +50,7 @@ class PM2Operator(BaseOperator):
             makedirs(self.dirname)
 
             # open file
-            with open(self.filename, 'w') as fp:
+            with open(self.filename, "w") as fp:
                 # write the ecosystem file
                 fp.write(self.ecosystem)
 

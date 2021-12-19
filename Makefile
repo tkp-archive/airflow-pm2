@@ -2,16 +2,10 @@ tests: ## Make unit tests
 	python -m pytest -v airflow_pm2 --cov=airflow_pm2 --junitxml=python_junit.xml --cov-report=xml --cov-branch
 
 lint: ## run linter
-	python -m flake8 airflow_pm2
+	python -m flake8 airflow_pm2 setup.py docs/conf.py
 
 fix:  ## run black fix
-	python -m black airflow_pm2/
-
-annotate: ## MyPy type annotation check
-	python -m mypy -s airflow_pm2
-
-annotate_l: ## MyPy type annotation check - count only
-	python -m mypy -s airflow_pm2 | wc -l 
+	python -m black airflow_pm2/ setup.py docs/conf.py
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf 
@@ -30,10 +24,13 @@ install:  ## install to site-packages
 dev:
 	python -m pip install .[dev]
 
-dist:  ## dist to pypi
+dist:  ## create dists
 	rm -rf dist build
 	python setup.py sdist bdist_wheel
-	python -m twine check dist/* && twine upload dist/*
+	python -m twine check dist/*
+	
+publish: dist  ## dist to pypi
+	python -m twine upload dist/* --skip-existing
 
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help
@@ -43,4 +40,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean test tests help annotate annotate_l docs dist
+.PHONY: clean test tests help lint fix docs dist
