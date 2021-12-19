@@ -1,9 +1,9 @@
 # airflow-pm2
 Custom Apache Airflow operator for launching pm2 tasks
 
-[![Build Status](https://github.com/iexcloud/airflow-pm2/workflows/Build%20Status/badge.svg?branch=main)](https://github.com/iexcloud/airflow-pm2/actions?query=workflow%3A%22Build+Status%22)
-[![Coverage](https://codecov.io/gh/iexcloud/airflow-pm2/branch/main/graph/badge.svg?token=ag2j2TV2wE)](https://codecov.io/gh/iexcloud/airflow-pm2)
-[![License](https://img.shields.io/github/license/iexcloud/airflow-pm2.svg)](https://github.com/iexcloud/airflow-pm2)
+[![Build Status](https://github.com/timkpaine/airflow-pm2/workflows/Build%20Status/badge.svg?branch=main)](https://github.com/timkpaine/airflow-pm2/actions?query=workflow%3A%22Build+Status%22)
+[![Coverage](https://codecov.io/gh/timkpaine/airflow-pm2/branch/main/graph/badge.svg?token=ag2j2TV2wE)](https://codecov.io/gh/timkpaine/airflow-pm2)
+[![License](https://img.shields.io/github/license/timkpaine/airflow-pm2.svg)](https://github.com/timkpaine/airflow-pm2)
 [![PyPI](https://img.shields.io/pypi/v/airflow-pm2.svg)](https://pypi.python.org/pypi/airflow-pm2/)
 
 
