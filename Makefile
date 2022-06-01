@@ -2,21 +2,15 @@ tests: ## Make unit tests
 	python -m pytest -v airflow_pm2 --cov=airflow_pm2 --junitxml=python_junit.xml --cov-report=xml --cov-branch
 
 lint: ## run linter
-	python -m flake8 airflow_pm2 setup.py docs/conf.py
+	python -m flake8 airflow_pm2 setup.py
 
 fix:  ## run black fix
-	python -m black airflow_pm2/ setup.py docs/conf.py
+	python -m black airflow_pm2/ setup.py
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf 
 	find . -name "*.pyc" | xargs rm -rf 
 	rm -rf .coverage cover htmlcov logs build dist *.egg-info
-	make -C ./docs clean
-	rm -rf ./docs/*.*.rst  # generated
-
-docs:  ## make documentation
-	make -C ./docs html
-	open ./docs/_build/html/index.html
 
 install:  ## install to site-packages
 	python -m pip install .
@@ -40,4 +34,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean test tests help lint fix docs dist
+.PHONY: clean test tests help lint fix dist
